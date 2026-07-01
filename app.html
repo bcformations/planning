@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BC Formations</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bleu:        #1B75BB;
+    --bleu-dark:   #145D96;
+    --bleu-light:  #D6EAF8;
+    --bleu-light2: #EBF5FB;
+    --noir:        #1C2833;
+    --gris-moyen:  #5D6D7E;
+    --gris-clair:  #F2F3F4;
+    --blanc:       #FFFFFF;
+    --vert:        #1E8449;
+    --vert-light:  #D5F5E3;
+    --orange:      #D35400;
+    --orange-light:#FDEBD0;
+    --rouge:       #C0392B;
+    --rouge-light: #FADBD8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+  /* ══════════════════════════════════════════════════
+     VUE SALARIÉ (carte centrée)
+     ══════════════════════════════════════════════════ */
+  #vue-session {
+    background: var(--noir);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    background: var(--blanc);
+    width: 100%;
+    max-width: 580px;
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    animation: slideUp .4s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes slideUp { from { opacity:0; transform: translateY(28px); } to { opacity:1; transform: translateY(0); } }
+  .header { background: var(--bleu); padding: 28px 32px 24px; position: relative; overflow: hidden; }
+  .header::before { content:''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: rgba(255,255,255,.08); border-radius: 50%; }
+  .header::after { content:''; position: absolute; bottom: -60px; right: 40px; width: 120px; height: 120px; background: rgba(255,255,255,.05); border-radius: 50%; }
+  .logo-header { margin-bottom: 16px; position: relative; z-index: 1; font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; color:white; letter-spacing:2px; text-transform:uppercase; }
+  .formation-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--blanc); line-height: 1.1; text-transform: uppercase; letter-spacing: .5px; position: relative; z-index: 1; }
+  .header-sub { margin-top: 10px; font-size: 13px; color: rgba(255,255,255,.75); font-weight: 400; position: relative; z-index: 1; }
+  .body { padding: 28px 32px; }
+  .section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gris-moyen); margin-bottom: 14px; }
+  .session { border: 1.5px solid #E5E8EA; border-radius: 6px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform: translateX(-8px); } to { opacity:1; transform: translateX(0); } }
+  .session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-confirmee { background: var(--vert); } .dot-attente { background: #F0B429; } .dot-complet { background: var(--orange); } .dot-annulee { background: #B0BEC5; }
+  .session-info { flex: 1; }
+  .session-date { font-weight: 600; font-size: 14px; color: var(--noir); margin-bottom: 3px; }
+  .session-lieu { font-size: 12px; color: var(--gris-moyen); }
+  .session-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .badge-confirmee { background: var(--vert-light); color: var(--vert); } .badge-attente { background: #FFF8E1; color: #B8860B; } .badge-complet { background: var(--orange-light); color: var(--orange); } .badge-annulee { background: #ECEFF1; color: #78909C; }
+  .empty { text-align: center; padding: 32px 16px; color: var(--gris-moyen); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; line-height: 1.6; }
+  .loading { text-align: center; padding: 24px; color: var(--gris-moyen); font-size: 14px; }
+  .divider { height: 1px; background: #E5E8EA; margin: 24px 0; }
+  .interest-block { text-align: center; }
+  .interest-label { font-size: 14px; color: var(--gris-moyen); margin-bottom: 14px; }
+  .btn-interest { display: inline-block; background: var(--bleu); color: white; text-decoration: none; padding: 13px 28px; border-radius: 4px; font-weight: 600; font-size: 14px; letter-spacing: .3px; transition: background .2s; }
+  .btn-interest:hover { background: var(--bleu-dark); }
+  .footer { background: var(--gris-clair); padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-note { font-size: 11px; color: var(--gris-moyen); }
+  .footer-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: var(--bleu); letter-spacing: 1px; }
+  .error-banner { background: #FFF3E0; border: 1.5px solid #FFB74D; border-radius: 6px; padding: 12px 16px; font-size: 13px; color: #E65100; margin-bottom: 16px; display: none; }
+
+  /* ══════════════════════════════════════════════════
+     VUE ADMIN
+     ══════════════════════════════════════════════════ */
+  #vue-admin { background: var(--gris-clair); min-height: 100vh; }
+  .topbar { background: var(--bleu); padding: 16px 32px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .topbar-title { font-family:'Barlow Condensed',sans-serif; font-size: 22px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: .5px; }
+  .topbar-sub { font-size:12px; color:rgba(255,255,255,.7); margin-top:1px; }
+  .badge-admin { margin-left: auto; background: rgba(255,255,255,.15); color: white; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .admincard { background: var(--blanc); border-radius: 6px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
+  .card-header { padding: 18px 24px; border-bottom: 1.5px solid #E8EAED; display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-family:'Barlow Condensed',sans-serif; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--noir); }
+  .card-body { padding: 24px; }
+  .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 1.5fr 1.2fr 0.8fr 1.2fr; gap: 10px; align-items: end; }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  .form-label { font-size:11px; font-weight:600; color:var(--gris-moyen); text-transform:uppercase; letter-spacing:.5px; }
+  .form-control { border: 1.5px solid #D5D8DC; border-radius: 4px; padding: 9px 11px; font-family:'Barlow',sans-serif; font-size: 13px; color: var(--noir); background: white; transition: border-color .2s; width: 100%; }
+  .form-control:focus { outline:none; border-color:var(--bleu); box-shadow:0 0 0 3px rgba(27,117,187,.1); }
+  select.form-control { cursor:pointer; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 4px; font-family:'Barlow',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; white-space: nowrap; }
+  .btn-primary { background:var(--bleu); color:white; } .btn-primary:hover { background:var(--bleu-dark); }
+  .btn-success { background:var(--vert); color:white; } .btn-success:hover { background:#196F3D; }
+  .btn-danger { background:transparent; color:var(--rouge); border:1.5px solid var(--rouge); padding:5px 10px; font-size:12px; } .btn-danger:hover { background:var(--rouge-light); }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { background: var(--gris-clair); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gris-moyen); border-bottom: 2px solid #E0E0E0; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid #F0F0F0; transition: background .15s; }
+  tbody tr:hover { background: var(--bleu-light2); }
+  tbody td { padding: 11px 14px; color: var(--noir); vertical-align: middle; }
+  .td-formation { font-weight:600; max-width:200px; }
+  .td-edit { display:flex; gap:6px; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .export-bar { background: var(--bleu-light2); border: 1.5px solid #AED6F1; border-radius: 6px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .export-info { font-size:13px; color:var(--bleu-dark); }
+  .export-info strong { display:block; font-size:15px; margin-bottom:3px; }
+  .empty-state { text-align:center; padding:40px; color:var(--gris-moyen); }
+  .empty-state .icon { font-size:32px; margin-bottom:10px; }
+  #toast { position:fixed; bottom:24px; right:24px; background:var(--vert); color:white; padding:12px 20px; border-radius:6px; font-size:14px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.2); transform:translateY(80px); opacity:0; transition:all .3s cubic-bezier(.16,1,.3,1); z-index:999; }
+  #toast.show { transform:translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     VUE 1 : SESSION (vue par défaut — salariés)
+     URL : app.html?nom=AutoCAD
+     ══════════════════════════════════════════════════ -->
+<div id="vue-session" style="display:none;">
+  <div class="card">
+    <div class="header">
+      <div class="logo-header">BC Formations</div>
+      <div class="formation-title" id="titre-formation">Chargement…</div>
+      <div class="header-sub" id="nb-sessions"></div>
+    </div>
+    <div class="body">
+      <div class="error-banner" id="error-banner"></div>
+      <div class="section-label">📅 Prochaines sessions</div>
+      <div id="sessions-list"><div class="loading">Chargement des sessions…</div></div>
+      <div class="divider"></div>
+      <div class="interest-block">
+        <div class="interest-label">Vous souhaitez participer à cette formation ?</div>
+        <a id="btn-interet" href="#" class="btn-interest">✋ &nbsp;Signaler mon intérêt</a>
+      </div>
+    </div>
+    <div class="footer">
+      <span class="footer-note">Inscription officielle à suivre via votre application RH</span>
+      <span class="footer-brand">BC Formations</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     VUE 2 : ADMIN (gestion des sessions — Gwenaëlle)
+     URL : app.html?vue=admin
+     ══════════════════════════════════════════════════ -->
+<div id="vue-admin" style="display:none;">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">BC Formations — Administration</div>
+      <div class="topbar-sub">Gestion des sessions de formation</div>
+    </div>
+    <span class="badge-admin">ACCÈS RESTREINT</span>
+  </div>
+
+  <div class="container">
+
+    <div class="admincard">
+      <div class="card-header"><span class="card-title">➕ Ajouter une session</span></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Formation *</label>
+            <select id="f-formation" class="form-control" onchange="toggleAutreFormation(this)">
+              <option value="">-- Choisir une formation --</option>
+            </select>
+            <input type="text" id="f-formation-custom" class="form-control" placeholder="Saisir le nom de la formation" style="display:none;margin-top:6px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input type="date" id="f-date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Heure *</label>
+            <input type="time" id="f-heure" class="form-control" value="09:00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Durée</label>
+            <div style="display:flex;gap:6px;">
+              <input type="number" id="f-duree-valeur" class="form-control" value="1" min="0.5" step="0.5" style="width:60px;flex-shrink:0;">
+              <select id="f-duree-unite" class="form-control" style="min-width:90px;">
+                <option value="heure(s)">heure(s)</option>
+                <option value="journée(s)" selected>journée(s)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lieu</label>
+            <select id="f-lieu" class="form-control" onchange="toggleAutreLieu(this)">
+              <option>Salle de formation 1</option>
+              <option>Salle de formation 2</option>
+              <option>Salle de réunion Nord</option>
+              <option>Salle VIP</option>
+              <option>Distanciel</option>
+              <option value="__autre__">✏️ Autre lieu…</option>
+            </select>
+            <input type="text" id="f-lieu-custom" class="form-control" placeholder="Saisir le lieu" style="display:none;margin-top:6px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Formateur</label>
+            <input type="text" id="f-formateur" class="form-control" placeholder="Nom du formateur">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Places</label>
+            <input type="number" id="f-places" class="form-control" value="10" min="1" max="99">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select id="f-statut" class="form-control">
+              <option>Confirmée</option>
+              <option>En attente</option>
+              <option>Complet</option>
+              <option>Annulée</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="ajouterSession()">➕ &nbsp;Ajouter cette session</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admincard">
+      <div class="card-header"><span class="card-title">✏️ Renommer une formation</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:2fr 2fr auto;gap:10px;align-items:end;">
+          <div class="form-group">
+            <label class="form-label">Formation actuelle</label>
+            <select id="r-ancien" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nouveau nom</label>
+            <input type="text" id="r-nouveau" class="form-control" placeholder="Saisir le nouveau nom">
+          </div>
+          <button class="btn btn-primary" onclick="renommerFormation()">✏️ Renommer</button>
+        </div>
+        <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
+          Renomme la formation dans la liste déroulante <strong>et</strong> dans toutes les sessions déjà enregistrées.
+        </p>
+      </div>
+    </div>
+
+    <div class="admincard">
+      <div class="card-header">
+        <span class="card-title">📋 Sessions planifiées</span>
+        <span id="compteur" style="font-size:13px;color:var(--gris-moyen);"></span>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Formation</th><th>Date</th><th>Heure début</th><th>Durée</th><th>Lieu</th><th>Formateur</th><th>Places</th><th>Statut</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <div id="empty-state" class="empty-state" style="display:none;">
+            <div class="icon">📭</div>
+            <div>Aucune session pour le moment.<br>Ajoutez-en une ci-dessus !</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="export-bar">
+      <div class="export-info">
+        <strong>💾 Enregistrer les modifications</strong>
+        Téléchargez le fichier <code>sessions.json</code> et remplacez l'ancien sur l'hébergement.
+      </div>
+      <button class="btn btn-success" onclick="exporterJSON()">⬇️ &nbsp;Télécharger sessions.json</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODALE D'ÉDITION D'UNE SESSION
+     ══════════════════════════════════════════════════ -->
+<div id="modale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:8px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px;border-bottom:1.5px solid #E8EAED;display:flex;align-items:center;justify-content:space-between;">
+      <span class="card-title">✏️ Modifier la session</span>
+      <button onclick="fermerModale()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gris-moyen);">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <div style="display:grid;grid-template-columns:1fr;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Formation</label>
+          <input type="text" id="m-formation" class="form-control" readonly style="background:#F5F5F5;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" id="m-date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Heure début</label>
+            <input type="time" id="m-heure" class="form-control">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Durée</label>
+            <div style="display:flex;gap:6px;">
+              <input type="number" id="m-duree-valeur" class="form-control" min="0.5" step="0.5" style="width:90px;">
+              <select id="m-duree-unite" class="form-control">
+                <option value="heure(s)">heure(s)</option>
+                <option value="journée(s)">journée(s)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Places</label>
+            <input type="number" id="m-places" class="form-control" min="1" max="99">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Lieu</label>
+            <select id="m-lieu" class="form-control" onchange="toggleAutreLieuModale(this)">
+              <option>Salle de formation 1</option>
+              <option>Salle de formation 2</option>
+              <option>Salle de réunion Nord</option>
+              <option>Salle VIP</option>
+              <option>Distanciel</option>
+              <option value="__autre__">✏️ Autre lieu…</option>
+            </select>
+            <input type="text" id="m-lieu-custom" class="form-control" placeholder="Saisir le lieu" style="display:none;margin-top:6px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select id="m-statut" class="form-control">
+              <option>Confirmée</option>
+              <option>En attente</option>
+              <option>Complet</option>
+              <option>Annulée</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Formateur</label>
+          <input type="text" id="m-formateur" class="form-control" placeholder="Nom du formateur">
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
+        <button class="btn btn-danger" onclick="supprimerDepuisModale()">🗑 Supprimer cette session</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" style="background:#E8EAED;color:var(--noir);" onclick="fermerModale()">Annuler</button>
+          <button class="btn btn-success" onclick="enregistrerModale()">💾 Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+// PARAMÈTRE À MODIFIER — lien du formulaire d'intérêt
+// ════════════════════════════════════════════════════
+const LIEN_FORMULAIRE = "https://forms.office.com/e/ah7A2bKu77";
+
+// ════════════════════════════════════════════════════
+// LISTE DES FORMATIONS DU CATALOGUE BC
+// ════════════════════════════════════════════════════
+const FORMATIONS = [
+  "Module 1 - Généralités sur la Gestion Contractuelle",
+  "Module 2 - Cautions / Garanties / Assurances",
+  "Module 3 - le Contrat de Sous-Traitance",
+  "Module 4 - Gestion et Prévenance des Conflits / Mémoire en Réclamation",
+  "Module 5 - Maîtrise des Coûts - la Facturation",
+  "Module 6 - Maîtrise des Coûts - le Contrôle Financier",
+  "Module 7 - Maîtrise des Délais - le Planning",
+  "Module 8 - Maîtrise de la Qualité",
+  "les Aciers dans la Construction Métallique",
+  "le Soudage pour les Bureaux d'Etudes",
+  "Visserie et Boulonnerie",
+  "Traitement de Surface",
+  "la Qualité au Service du Produit",
+  "les Plans",
+  "le Calcul",
+  "EN1090",
+  "Electricité et Automatisme Appliqué aux Machines",
+  "RDM et Introduction aux Eurocodes",
+  "les Moyens d'Attache Boulonnée – Connaissances Élémentaires",
+  "SCIA Engineer Niveau Débutant",
+  "SCIA Engineer Niveau Intermédiaire",
+  "SCIA Engineer Niveau Maîtrise",
+  "BOCAD",
+  "AUTOCAD Perfectionnement",
+  "TEKLA : Modélisation et Sortie",
+  "TEKLA Bonnes Pratiques",
+  "TRIMBLE Connect pour les BE",
+  "Bureau d'Étude Module Dessinateur",
+  "Module Ingénieur du Bureau d'Études",
+  "Conducteurs de Travaux : Préparation, Organisation et Suivi de Chantier",
+  "les Fondamentaux du Risque Plomb",
+  "MS-Project - la Gestion de Chantier",
+  "Trimble Field Link",
+  "Sensibilisation aux Transports Exceptionnels",
+  "Soudeurs Chantiers avec Soldamatic",
+  "Commercial Prospection & Gagner de Nouveaux Clients",
+  "Norme EN 1090-2 pour la Fabrication",
+  "Protection Respiratoire : Port et Entretien du Masque",
+  "Précontrainte par Post Tension",
+  "DEMAX : Utilisateurs",
+  "Utiliser une Tablette avec TRIMBLE en Ateliers",
+  "DIOTA Editor",
+  "DIOTA Player",
+  "la Qualité du Soudage",
+  "le Soudage dans la Construction Métallique",
+  "Soudage via Soldamatic",
+  "Meulage",
+  "Chalumeau",
+  "Port de la Cagoule de Soudage Ventilée",
+  "Extincteur",
+  "Activité Nucléaire et Procédures BC",
+  "Culture Sûreté et Risque CFS",
+  "Exigence Enjeux EDF",
+  "Orano pour Nucléaire",
+  "Conduite d'Audit",
+  "Cycle Service Financier – Marchés",
+  "les Points Essentiels de l'Analyse Financière",
+  "Comprendre le Bilan d'une Entreprise",
+  "BC Achat",
+  "Droit Social",
+  "BC Temps",
+  "IA au Service Achat",
+  "Immobilisation",
+  "ISO 9443 Achat",
+  "la Sous-Traitance Module Achats",
+  "Nouveau Process Intérim",
+  "Sensibilisation à la QSE",
+  "Fresque du Climat",
+  "Track Déchets",
+  "Norme ASQË Joint de Chaussée",
+];
+
+// ════════════════════════════════════════════════════
+// FONCTIONS UTILITAIRES PARTAGÉES
+// ════════════════════════════════════════════════════
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name) || "";
+}
+function normalize(str) {
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g," ").trim();
+}
+function badgeClass(statut) {
+  const m = { "Confirmée":"confirmee","En attente":"attente","Complet":"complet","Annulée":"annulee" };
+  return m[statut] || "attente";
+}
+function parseDateFR(d) {
+  const [j, m, a] = d.split("/");
+  return new Date(a, m - 1, j);
+}
+function estFuture(dateStr) {
+  const sessionDate = parseDateFR(dateStr);
+  const aujourdhui = new Date();
+  aujourdhui.setHours(0, 0, 0, 0);
+  return sessionDate >= aujourdhui;
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ════════════════════════════════════════════════════
+// VUE SESSION (salariés)
+// ════════════════════════════════════════════════════
+function renderSession(SESSIONS) {
+  const nomBrut = getParam("nom");
+  const nomNorm = normalize(nomBrut);
+  let nomAffiche = nomBrut;
+  const match = SESSIONS.find(s => normalize(s.formation) === nomNorm);
+  if (match) nomAffiche = match.formation;
+  const sessions = SESSIONS.filter(s => normalize(s.formation) === nomNorm && estFuture(s.date));
+  document.getElementById("titre-formation").textContent = nomAffiche || "Formation introuvable";
+  const confirmees = sessions.filter(s => s.statut !== "Annulée").length;
+  document.getElementById("nb-sessions").textContent = confirmees > 0
+    ? confirmees + " session" + (confirmees > 1 ? "s" : "") + " programmée" + (confirmees > 1 ? "s" : "")
+    : "Aucune session programmée pour le moment";
+  const list = document.getElementById("sessions-list");
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Aucune session planifiée pour l\'instant.<br>Signalez votre intérêt ci-dessous !</div></div>';
+  } else {
+    list.innerHTML = sessions.map(function(s, i) {
+      return '<div class="session" style="animation-delay:' + (i * 0.06) + 's"><div class="session-dot dot-' + badgeClass(s.statut) + '"></div><div class="session-info"><div class="session-date">📅 ' + s.date + ' &nbsp;·&nbsp; 🕐 ' + s.heure + '</div><div class="session-lieu">📍 ' + s.lieu + ' &nbsp;·&nbsp; ⏱ ' + s.duree + ' &nbsp;·&nbsp; ' + s.places + ' places' + (s.formateur ? ' &nbsp;·&nbsp; 👤 ' + s.formateur : '') + '</div></div><span class="session-badge badge-' + badgeClass(s.statut) + '">' + s.statut + '</span></div>';
+    }).join("");
+  }
+  document.getElementById("btn-interet").href = LIEN_FORMULAIRE;
+}
+
+async function initSession() {
+  document.getElementById("vue-session").style.display = "flex";
+  try {
+    const resp = await fetch("sessions.json");
+    if (!resp.ok) throw new Error("Fichier sessions.json introuvable");
+    const SESSIONS = await resp.json();
+    renderSession(SESSIONS);
+  } catch(e) {
+    const banner = document.getElementById("error-banner");
+    banner.style.display = "block";
+    banner.textContent = "⚠️ Impossible de charger les sessions. Vérifiez que le fichier sessions.json est bien dans le même dossier que cette page.";
+    document.getElementById("titre-formation").textContent = getParam("nom") || "Formation";
+    document.getElementById("nb-sessions").textContent = "";
+    document.getElementById("sessions-list").innerHTML = "";
+    document.getElementById("btn-interet").href = LIEN_FORMULAIRE;
+  }
+}
+
+// ════════════════════════════════════════════════════
+// VUE ADMIN (Gwenaëlle)
+// ════════════════════════════════════════════════════
+let sessions = [];
+
+async function initAdmin() {
+  document.getElementById("vue-admin").style.display = "block";
+
+  const sel = document.getElementById("f-formation");
+  FORMATIONS.slice().sort().forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f;
+    opt.textContent = f;
+    sel.appendChild(opt);
+  });
+  const autreOpt = document.createElement("option");
+  autreOpt.value = "__autre__";
+  autreOpt.textContent = "✏️ Autre formation…";
+  sel.appendChild(autreOpt);
+
+  // Remplir la liste déroulante du renommage
+  const selRenommer = document.getElementById("r-ancien");
+  FORMATIONS.forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f;
+    opt.textContent = f;
+    selRenommer.appendChild(opt);
+  });
+
+  try {
+    const resp = await fetch("sessions.json");
+    if (resp.ok) sessions = await resp.json();
+  } catch(e) { /* pas de fichier existant, on part de zéro */ }
+
+  renderTable();
+}
+
+function toggleAutreFormation(sel) {
+  const custom = document.getElementById("f-formation-custom");
+  custom.style.display = sel.value === "__autre__" ? "block" : "none";
+  if (sel.value === "__autre__") custom.focus();
+}
+function toggleAutreLieu(sel) {
+  const custom = document.getElementById("f-lieu-custom");
+  custom.style.display = sel.value === "__autre__" ? "block" : "none";
+  if (sel.value === "__autre__") custom.focus();
+}
+
+function renderTable() {
+  const tbody = document.getElementById("tbody");
+  const empty = document.getElementById("empty-state");
+  const compteur = document.getElementById("compteur");
+
+  compteur.textContent = sessions.length + " session" + (sessions.length > 1 ? "s" : "");
+
+  if (sessions.length === 0) {
+    tbody.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  tbody.innerHTML = sessions.map((s, i) => `
+    <tr>
+      <td class="td-formation">${s.formation}</td>
+      <td>${s.date}</td>
+      <td>${s.heure}</td>
+      <td>${s.duree}</td>
+      <td>${s.lieu}</td>
+      <td>${s.formateur || '—'}</td>
+      <td>${s.places}</td>
+      <td><span class="badge badge-${badgeClass(s.statut)}">${s.statut}</span></td>
+      <td><div class="td-edit"><button class="btn btn-primary btn-sm" onclick="ouvrirModale(${i})">✏️ Modifier</button></div></td>
+    </tr>
+  `).join("");
+}
+
+function ajouterSession() {
+  const selFormation = document.getElementById("f-formation").value;
+  const formation = selFormation === "__autre__"
+    ? document.getElementById("f-formation-custom").value.trim()
+    : selFormation;
+
+  const dateVal = document.getElementById("f-date").value;
+  const heure   = document.getElementById("f-heure").value;
+
+  const dureeValeur = parseFloat(document.getElementById("f-duree-valeur").value) || 1;
+  const dureeUnite  = document.getElementById("f-duree-unite").value;
+  let duree;
+  if (dureeUnite === "heure(s)") {
+    const entier = Math.floor(dureeValeur);
+    const decimal = dureeValeur - entier;
+    duree = entier + "h" + (decimal === 0.5 ? "30" : "");
+  } else {
+    duree = (dureeValeur === 1 ? "1 journée" : dureeValeur + " journées");
+  }
+
+  const selLieu = document.getElementById("f-lieu").value;
+  const lieu = selLieu === "__autre__"
+    ? document.getElementById("f-lieu-custom").value.trim()
+    : selLieu;
+
+  const places = parseInt(document.getElementById("f-places").value) || 10;
+  const statut = document.getElementById("f-statut").value;
+  const formateur = document.getElementById("f-formateur").value.trim();
+
+  if (!formation) { alert("Veuillez choisir ou saisir une formation."); return; }
+  if (!dateVal)   { alert("Veuillez choisir une date."); return; }
+  if (!lieu)      { alert("Veuillez saisir un lieu."); return; }
+
+  const [y, m, d] = dateVal.split("-");
+  const dateFormatee = `${d}/${m}/${y}`;
+  const heureFormatee = heure.replace(":", "h");
+
+  sessions.push({ formation, date: dateFormatee, heure: heureFormatee, duree, lieu, formateur, places, statut });
+
+  sessions.sort((a, b) => parseDateFR(a.date) - parseDateFR(b.date));
+
+  renderTable();
+  showToast("✅ Session ajoutée !");
+
+  document.getElementById("f-formation").value = "";
+  document.getElementById("f-formation-custom").style.display = "none";
+  document.getElementById("f-formation-custom").value = "";
+  document.getElementById("f-lieu").value = "Salle de formation 1";
+  document.getElementById("f-lieu-custom").style.display = "none";
+  document.getElementById("f-lieu-custom").value = "";
+  document.getElementById("f-formateur").value = "";
+  document.getElementById("f-date").value = "";
+  document.getElementById("f-duree-valeur").value = "1";
+  document.getElementById("f-duree-unite").value = "journée(s)";
+}
+
+function renommerFormation() {
+  const ancien = document.getElementById("r-ancien").value;
+  const nouveau = document.getElementById("r-nouveau").value.trim();
+
+  if (!ancien)  { alert("Veuillez choisir la formation à renommer."); return; }
+  if (!nouveau) { alert("Veuillez saisir le nouveau nom."); return; }
+  if (nouveau === ancien) { alert("Le nouveau nom est identique à l'ancien."); return; }
+
+  // Mettre à jour la liste déroulante FORMATIONS
+  const idx = FORMATIONS.indexOf(ancien);
+  if (idx !== -1) FORMATIONS[idx] = nouveau;
+
+  // Mettre à jour toutes les sessions déjà enregistrées
+  let compteur = 0;
+  sessions.forEach(s => {
+    if (s.formation === ancien) {
+      s.formation = nouveau;
+      compteur++;
+    }
+  });
+
+  // Rafraîchir les listes déroulantes (Ajouter + Renommer)
+  rafraichirListesFormations();
+
+  renderTable();
+  showToast(`✅ Formation renommée (${compteur} session${compteur > 1 ? "s" : ""} mise${compteur > 1 ? "s" : ""} à jour)`);
+
+  document.getElementById("r-ancien").value = nouveau;
+  document.getElementById("r-nouveau").value = "";
+}
+
+function rafraichirListesFormations() {
+  const sorted = FORMATIONS.slice().sort();
+
+  const selAjout = document.getElementById("f-formation");
+  const valAjout = selAjout.value;
+  selAjout.innerHTML = '<option value="">-- Choisir une formation --</option>';
+  sorted.forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f; opt.textContent = f;
+    selAjout.appendChild(opt);
+  });
+  const autreOpt = document.createElement("option");
+  autreOpt.value = "__autre__";
+  autreOpt.textContent = "✏️ Autre formation…";
+  selAjout.appendChild(autreOpt);
+  selAjout.value = valAjout;
+
+  const selRenommer = document.getElementById("r-ancien");
+  selRenommer.innerHTML = "";
+  FORMATIONS.forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f; opt.textContent = f;
+    selRenommer.appendChild(opt);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// MODALE D'ÉDITION
+// ════════════════════════════════════════════════════
+let indexEnCours = null;
+
+function parseDureeTexte(dureeStr) {
+  // "1h30" -> {valeur:1.5, unite:"heure(s)"} ; "2 journées" -> {valeur:2, unite:"journée(s)"}
+  if (dureeStr.includes("h")) {
+    const [h, m] = dureeStr.replace("h", " ").trim().split(" ");
+    const heures = parseInt(h) || 0;
+    const minutes = m === "30" ? 0.5 : 0;
+    return { valeur: heures + minutes, unite: "heure(s)" };
+  } else {
+    const valeur = parseFloat(dureeStr) || 1;
+    return { valeur, unite: "journée(s)" };
+  }
+}
+function formatDuree(valeur, unite) {
+  if (unite === "heure(s)") {
+    const entier = Math.floor(valeur);
+    const decimal = valeur - entier;
+    return entier + "h" + (decimal === 0.5 ? "30" : "");
+  } else {
+    return (valeur === 1 ? "1 journée" : valeur + " journées");
+  }
+}
+function heureFRtoInput(heureStr) {
+  // "09h00" -> "09:00"
+  return heureStr.replace("h", ":");
+}
+function heureInputToFR(heureStr) {
+  // "09:00" -> "09h00"
+  return heureStr.replace(":", "h");
+}
+function dateFRtoInput(dateStr) {
+  // "24/06/2026" -> "2026-06-24"
+  const [j, m, a] = dateStr.split("/");
+  return `${a}-${m}-${j}`;
+}
+function dateInputToFR(dateStr) {
+  // "2026-06-24" -> "24/06/2026"
+  const [a, m, j] = dateStr.split("-");
+  return `${j}/${m}/${a}`;
+}
+
+function ouvrirModale(i) {
+  indexEnCours = i;
+  const s = sessions[i];
+
+  document.getElementById("m-formation").value = s.formation;
+  document.getElementById("m-date").value = dateFRtoInput(s.date);
+  document.getElementById("m-heure").value = heureFRtoInput(s.heure);
+
+  const { valeur, unite } = parseDureeTexte(s.duree);
+  document.getElementById("m-duree-valeur").value = valeur;
+  document.getElementById("m-duree-unite").value = unite;
+
+  document.getElementById("m-places").value = s.places;
+  document.getElementById("m-formateur").value = s.formateur || "";
+  document.getElementById("m-statut").value = s.statut;
+
+  const lieuxConnus = ["Salle de formation 1", "Salle de formation 2", "Salle de réunion Nord", "Salle VIP", "Distanciel"];
+  const selLieu = document.getElementById("m-lieu");
+  const customLieu = document.getElementById("m-lieu-custom");
+  if (lieuxConnus.includes(s.lieu)) {
+    selLieu.value = s.lieu;
+    customLieu.style.display = "none";
+    customLieu.value = "";
+  } else {
+    selLieu.value = "__autre__";
+    customLieu.style.display = "block";
+    customLieu.value = s.lieu;
+  }
+
+  document.getElementById("modale-overlay").style.display = "flex";
+}
+
+function fermerModale() {
+  document.getElementById("modale-overlay").style.display = "none";
+  indexEnCours = null;
+}
+
+function toggleAutreLieuModale(sel) {
+  const custom = document.getElementById("m-lieu-custom");
+  custom.style.display = sel.value === "__autre__" ? "block" : "none";
+  if (sel.value === "__autre__") custom.focus();
+}
+
+function enregistrerModale() {
+  if (indexEnCours === null) return;
+
+  const dateVal = document.getElementById("m-date").value;
+  const heureVal = document.getElementById("m-heure").value;
+  if (!dateVal)  { alert("Veuillez choisir une date."); return; }
+  if (!heureVal) { alert("Veuillez choisir une heure."); return; }
+
+  const selLieu = document.getElementById("m-lieu").value;
+  const lieu = selLieu === "__autre__"
+    ? document.getElementById("m-lieu-custom").value.trim()
+    : selLieu;
+  if (!lieu) { alert("Veuillez saisir un lieu."); return; }
+
+  const dureeValeur = parseFloat(document.getElementById("m-duree-valeur").value) || 1;
+  const dureeUnite = document.getElementById("m-duree-unite").value;
+
+  sessions[indexEnCours] = {
+    ...sessions[indexEnCours],
+    date: dateInputToFR(dateVal),
+    heure: heureInputToFR(heureVal),
+    duree: formatDuree(dureeValeur, dureeUnite),
+    lieu,
+    places: parseInt(document.getElementById("m-places").value) || 10,
+    formateur: document.getElementById("m-formateur").value.trim(),
+    statut: document.getElementById("m-statut").value,
+  };
+
+  sessions.sort((a, b) => parseDateFR(a.date) - parseDateFR(b.date));
+
+  renderTable();
+  fermerModale();
+  showToast("✅ Session modifiée !");
+}
+
+function supprimerDepuisModale() {
+  if (indexEnCours === null) return;
+  const s = sessions[indexEnCours];
+  if (!confirm(`Supprimer la session "${s.formation}" du ${s.date} ?`)) return;
+  sessions.splice(indexEnCours, 1);
+  renderTable();
+  fermerModale();
+  showToast("🗑 Session supprimée");
+}
+
+function supprimerSession(i) {
+  if (!confirm(`Supprimer la session "${sessions[i].formation}" du ${sessions[i].date} ?`)) return;
+  sessions.splice(i, 1);
+  renderTable();
+  showToast("🗑 Session supprimée");
+}
+
+function exporterJSON() {
+  const json = JSON.stringify(sessions, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = "sessions.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("💾 Fichier téléchargé !");
+}
+
+// ════════════════════════════════════════════════════
+// ROUTEUR — décide quelle vue afficher selon ?vue=
+// ════════════════════════════════════════════════════
+function init() {
+  const vue = getParam("vue");
+  if (vue === "admin") {
+    initAdmin();
+  } else {
+    initSession();
+  }
+}
+init();
+</script>
+</body>
+</html>
