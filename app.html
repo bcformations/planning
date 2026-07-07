@@ -57,12 +57,9 @@
   .session { border: 1.5px solid #E5E8EA; border-radius: 6px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; animation: fadeIn .3s ease both; }
   @keyframes fadeIn { from { opacity:0; transform: translateX(-8px); } to { opacity:1; transform: translateX(0); } }
   .session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .dot-confirmee { background: var(--vert); } .dot-attente { background: #F0B429; } .dot-complet { background: var(--orange); } .dot-annulee { background: #B0BEC5; }
   .session-info { flex: 1; }
   .session-date { font-weight: 600; font-size: 14px; color: var(--noir); margin-bottom: 3px; }
   .session-lieu { font-size: 12px; color: var(--gris-moyen); }
-  .session-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
-  .badge-confirmee { background: var(--vert-light); color: var(--vert); } .badge-attente { background: #FFF8E1; color: #B8860B; } .badge-complet { background: var(--orange-light); color: var(--orange); } .badge-annulee { background: #ECEFF1; color: #78909C; }
   .empty { text-align: center; padding: 32px 16px; color: var(--gris-moyen); }
   .empty-icon { font-size: 36px; margin-bottom: 12px; }
   .empty-text { font-size: 14px; line-height: 1.6; }
@@ -214,15 +211,6 @@
             <label class="form-label">Places</label>
             <input type="number" id="f-places" class="form-control" value="10" min="1" max="99">
           </div>
-          <div class="form-group">
-            <label class="form-label">Statut</label>
-            <select id="f-statut" class="form-control">
-              <option>Confirmée</option>
-              <option>En attente</option>
-              <option>Complet</option>
-              <option>Annulée</option>
-            </select>
-          </div>
         </div>
         <div style="margin-top:16px;display:flex;align-items:center;gap:14px;">
           <button class="btn btn-primary" onclick="ajouterSession()">➕ &nbsp;Ajouter cette session</button>
@@ -284,7 +272,7 @@
           <table>
             <thead>
               <tr>
-                <th>Formation</th><th>Date</th><th>Heure début</th><th>Durée</th><th>Lieu</th><th>Formateur</th><th>Places</th><th>Statut</th><th>Action</th>
+                <th>Formation</th><th>Date</th><th>Heure début</th><th>Durée</th><th>Lieu</th><th>Formateur</th><th>Places</th><th>Action</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -378,15 +366,6 @@
             </select>
             <input type="text" id="m-lieu-custom" class="form-control" placeholder="Saisir le lieu" style="display:none;margin-top:6px;">
           </div>
-          <div class="form-group">
-            <label class="form-label">Statut</label>
-            <select id="m-statut" class="form-control">
-              <option>Confirmée</option>
-              <option>En attente</option>
-              <option>Complet</option>
-              <option>Annulée</option>
-            </select>
-          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Formateur</label>
@@ -455,16 +434,16 @@ function renderSession(SESSIONS) {
   if (match) nomAffiche = match.formation;
   const sessions = SESSIONS.filter(s => normalize(s.formation) === nomNorm && estFuture(s.date));
   document.getElementById("titre-formation").textContent = nomAffiche || "Formation introuvable";
-  const confirmees = sessions.filter(s => s.statut !== "Annulée").length;
-  document.getElementById("nb-sessions").textContent = confirmees > 0
-    ? confirmees + " session" + (confirmees > 1 ? "s" : "") + " programmée" + (confirmees > 1 ? "s" : "")
+  const nb = sessions.length;
+  document.getElementById("nb-sessions").textContent = nb > 0
+    ? nb + " session" + (nb > 1 ? "s" : "") + " programmée" + (nb > 1 ? "s" : "")
     : "Aucune session programmée pour le moment";
   const list = document.getElementById("sessions-list");
   if (sessions.length === 0) {
     list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Aucune session planifiée pour l\'instant.<br>Signalez votre intérêt ci-dessous !</div></div>';
   } else {
     list.innerHTML = sessions.map(function(s, i) {
-      return '<div class="session" style="animation-delay:' + (i * 0.06) + 's"><div class="session-dot dot-' + badgeClass(s.statut) + '"></div><div class="session-info"><div class="session-date">📅 ' + s.date + ' &nbsp;·&nbsp; 🕐 ' + s.heure + '</div><div class="session-lieu">📍 ' + s.lieu + ' &nbsp;·&nbsp; ⏱ ' + s.duree + ' &nbsp;·&nbsp; ' + s.places + ' places' + (s.formateur ? ' &nbsp;·&nbsp; 👤 ' + s.formateur : '') + '</div></div><span class="session-badge badge-' + badgeClass(s.statut) + '">' + s.statut + '</span></div>';
+      return '<div class="session" style="animation-delay:' + (i * 0.06) + 's"><div class="session-info"><div class="session-date">📅 ' + s.date + ' &nbsp;·&nbsp; 🕐 ' + s.heure + '</div><div class="session-lieu">📍 ' + s.lieu + ' &nbsp;·&nbsp; ⏱ ' + s.duree + ' &nbsp;·&nbsp; ' + s.places + ' places' + (s.formateur ? ' &nbsp;·&nbsp; 👤 ' + s.formateur : '') + '</div></div></div>';
     }).join("");
   }
   document.getElementById("btn-interet").href = LIEN_FORMULAIRE;
@@ -568,7 +547,6 @@ function renderTable() {
       <td>${s.lieu}</td>
       <td>${s.formateur || '—'}</td>
       <td>${s.places}</td>
-      <td><span class="badge badge-${badgeClass(s.statut)}">${s.statut}</span></td>
       <td><div class="td-edit"><button class="btn btn-primary btn-sm" onclick="ouvrirModale(${i})">✏️ Modifier</button></div></td>
     </tr>
   `).join("");
@@ -608,7 +586,6 @@ function ajouterSession() {
     : selLieu;
 
   const places = parseInt(document.getElementById("f-places").value) || 10;
-  const statut = document.getElementById("f-statut").value;
   const formateur = document.getElementById("f-formateur").value.trim();
 
   if (!formation) { afficherErreur("Veuillez choisir ou saisir une formation."); return; }
@@ -621,7 +598,7 @@ function ajouterSession() {
   const dateFormatee = `${d}/${m}/${y}`;
   const heureFormatee = heure.replace(":", "h");
 
-  sessions.push({ formation, date: dateFormatee, heure: heureFormatee, duree, lieu, formateur, places, statut });
+  sessions.push({ formation, date: dateFormatee, heure: heureFormatee, duree, lieu, formateur, places });
 
   sessions.sort((a, b) => parseDateFR(a.date) - parseDateFR(b.date));
 
@@ -800,7 +777,6 @@ function ouvrirModale(i) {
 
   document.getElementById("m-places").value = s.places;
   document.getElementById("m-formateur").value = s.formateur || "";
-  document.getElementById("m-statut").value = s.statut;
 
   const lieuxConnus = ["Salle de formation 1", "Salle de formation 2", "Salle de réunion Nord", "Salle VIP", "Distanciel"];
   const selLieu = document.getElementById("m-lieu");
@@ -854,7 +830,6 @@ function enregistrerModale() {
     lieu,
     places: parseInt(document.getElementById("m-places").value) || 10,
     formateur: document.getElementById("m-formateur").value.trim(),
-    statut: document.getElementById("m-statut").value,
   };
 
   sessions.sort((a, b) => parseDateFR(a.date) - parseDateFR(b.date));
