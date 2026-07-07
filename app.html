@@ -224,29 +224,53 @@
             </select>
           </div>
         </div>
-        <div style="margin-top:16px;">
+        <div style="margin-top:16px;display:flex;align-items:center;gap:14px;">
           <button class="btn btn-primary" onclick="ajouterSession()">➕ &nbsp;Ajouter cette session</button>
+          <span id="form-erreur" style="display:none;color:#C0392B;font-size:13px;font-weight:600;">⚠️ <span id="form-erreur-msg"></span></span>
         </div>
       </div>
     </div>
 
     <div class="admincard">
-      <div class="card-header"><span class="card-title">✏️ Renommer une formation</span></div>
+      <div class="card-header"><span class="card-title">📚 Modifier le catalogue</span></div>
       <div class="card-body">
-        <div style="display:grid;grid-template-columns:2fr 2fr auto;gap:10px;align-items:end;">
-          <div class="form-group">
-            <label class="form-label">Formation actuelle</label>
-            <select id="r-ancien" class="form-control"></select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nouveau nom</label>
-            <input type="text" id="r-nouveau" class="form-control" placeholder="Saisir le nouveau nom">
-          </div>
-          <button class="btn btn-primary" onclick="renommerFormation()">✏️ Renommer</button>
+        <!-- Onglets -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #E5E8EA;">
+          <button id="tab-ajouter" onclick="switchTab('ajouter')" style="padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:var(--bleu);border-bottom:2px solid var(--bleu);margin-bottom:-2px;cursor:pointer;">➕ Ajouter une formation</button>
+          <button id="tab-renommer" onclick="switchTab('renommer')" style="padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--gris-moyen);cursor:pointer;">✏️ Renommer une formation</button>
         </div>
-        <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
-          Renomme la formation dans la liste déroulante <strong>et</strong> dans toutes les sessions déjà enregistrées.
-        </p>
+
+        <!-- Panneau Ajouter -->
+        <div id="panel-ajouter">
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+            <div class="form-group">
+              <label class="form-label">Nom de la nouvelle formation</label>
+              <input type="text" id="nouvelle-formation" class="form-control" placeholder="Ex : Excel à la Compta">
+            </div>
+            <button class="btn btn-primary" onclick="ajouterAuCatalogue()">➕ Ajouter au catalogue</button>
+          </div>
+          <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
+            Ajoute la formation à la liste déroulante <strong>et</strong> télécharge un nouveau <code>app.html</code> à uploader sur GitHub.
+          </p>
+        </div>
+
+        <!-- Panneau Renommer -->
+        <div id="panel-renommer" style="display:none;">
+          <div style="display:grid;grid-template-columns:2fr 2fr auto;gap:10px;align-items:end;">
+            <div class="form-group">
+              <label class="form-label">Formation actuelle</label>
+              <select id="r-ancien" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nouveau nom</label>
+              <input type="text" id="r-nouveau" class="form-control" placeholder="Saisir le nouveau nom">
+            </div>
+            <button class="btn btn-primary" onclick="renommerFormation()">✏️ Renommer</button>
+          </div>
+          <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
+            Renomme la formation dans la liste déroulante <strong>et</strong> dans toutes les sessions déjà enregistrées.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -276,9 +300,25 @@
     <div class="export-bar">
       <div class="export-info">
         <strong>💾 Enregistrer les modifications</strong>
-        Téléchargez le fichier <code>sessions.json</code> et remplacez l'ancien sur l'hébergement.
+        Téléchargez le fichier <code>sessions.json</code> et remplacez l'ancien sur GitHub.
       </div>
       <button class="btn btn-success" onclick="exporterJSON()">⬇️ &nbsp;Télécharger sessions.json</button>
+    </div>
+
+    <div class="admincard" style="margin-top:24px;">
+      <div class="card-header"><span class="card-title">🔗 Lien du formulaire "Signaler mon intérêt"</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+          <div class="form-group">
+            <label class="form-label">URL du formulaire Microsoft Forms</label>
+            <input type="text" id="forms-url" class="form-control" placeholder="https://forms.office.com/...">
+          </div>
+          <button class="btn btn-primary" onclick="sauvegarderFormsUrl()">💾 Sauvegarder</button>
+        </div>
+        <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
+          Ce lien est utilisé par le bouton "Signaler mon intérêt" sur la page salariés. Modifiez-le ici puis cliquez <strong>Sauvegarder</strong> — le nouveau <code>sessions.json</code> sera téléchargé automatiquement.
+        </p>
+      </div>
     </div>
 
   </div>
@@ -368,85 +408,11 @@
 
 <script>
 // ════════════════════════════════════════════════════
-// PARAMÈTRE À MODIFIER — lien du formulaire d'intérêt
+// DONNÉES CHARGÉES DEPUIS LE JSON
+// (lien_forms, formations et sessions viennent tous du fichier sessions.json)
 // ════════════════════════════════════════════════════
-const LIEN_FORMULAIRE = "https://forms.office.com/e/ah7A2bKu77";
-
-// ════════════════════════════════════════════════════
-// LISTE DES FORMATIONS DU CATALOGUE BC
-// ════════════════════════════════════════════════════
-const FORMATIONS = [
-  "Module 1 - Généralités sur la Gestion Contractuelle",
-  "Module 2 - Cautions / Garanties / Assurances",
-  "Module 3 - le Contrat de Sous-Traitance",
-  "Module 4 - Gestion et Prévenance des Conflits / Mémoire en Réclamation",
-  "Module 5 - Maîtrise des Coûts - la Facturation",
-  "Module 6 - Maîtrise des Coûts - le Contrôle Financier",
-  "Module 7 - Maîtrise des Délais - le Planning",
-  "Module 8 - Maîtrise de la Qualité",
-  "les Aciers dans la Construction Métallique",
-  "le Soudage pour les Bureaux d'Etudes",
-  "Visserie et Boulonnerie",
-  "Traitement de Surface",
-  "la Qualité au Service du Produit",
-  "les Plans",
-  "le Calcul",
-  "EN1090",
-  "Electricité et Automatisme Appliqué aux Machines",
-  "RDM et Introduction aux Eurocodes",
-  "les Moyens d'Attache Boulonnée – Connaissances Élémentaires",
-  "SCIA Engineer Niveau Débutant",
-  "SCIA Engineer Niveau Intermédiaire",
-  "SCIA Engineer Niveau Maîtrise",
-  "BOCAD",
-  "AUTOCAD Perfectionnement",
-  "TEKLA : Modélisation et Sortie",
-  "TEKLA Bonnes Pratiques",
-  "TRIMBLE Connect pour les BE",
-  "Bureau d'Étude Module Dessinateur",
-  "Module Ingénieur du Bureau d'Études",
-  "Conducteurs de Travaux : Préparation, Organisation et Suivi de Chantier",
-  "les Fondamentaux du Risque Plomb",
-  "MS-Project - la Gestion de Chantier",
-  "Trimble Field Link",
-  "Sensibilisation aux Transports Exceptionnels",
-  "Soudeurs Chantiers avec Soldamatic",
-  "Commercial Prospection & Gagner de Nouveaux Clients",
-  "Norme EN 1090-2 pour la Fabrication",
-  "Protection Respiratoire : Port et Entretien du Masque",
-  "Précontrainte par Post Tension",
-  "DEMAX : Utilisateurs",
-  "Utiliser une Tablette avec TRIMBLE en Ateliers",
-  "DIOTA Editor",
-  "DIOTA Player",
-  "la Qualité du Soudage",
-  "le Soudage dans la Construction Métallique",
-  "Soudage via Soldamatic",
-  "Meulage",
-  "Chalumeau",
-  "Port de la Cagoule de Soudage Ventilée",
-  "Extincteur",
-  "Activité Nucléaire et Procédures BC",
-  "Culture Sûreté et Risque CFS",
-  "Exigence Enjeux EDF",
-  "Orano pour Nucléaire",
-  "Conduite d'Audit",
-  "Cycle Service Financier – Marchés",
-  "les Points Essentiels de l'Analyse Financière",
-  "Comprendre le Bilan d'une Entreprise",
-  "BC Achat",
-  "Droit Social",
-  "BC Temps",
-  "IA au Service Achat",
-  "Immobilisation",
-  "ISO 9443 Achat",
-  "la Sous-Traitance Module Achats",
-  "Nouveau Process Intérim",
-  "Sensibilisation à la QSE",
-  "Fresque du Climat",
-  "Track Déchets",
-  "Norme ASQË Joint de Chaussée",
-];
+let LIEN_FORMULAIRE = "#";
+let FORMATIONS = [];
 
 // ════════════════════════════════════════════════════
 // FONCTIONS UTILITAIRES PARTAGÉES
@@ -509,8 +475,9 @@ async function initSession() {
   try {
     const resp = await fetch("sessions.json");
     if (!resp.ok) throw new Error("Fichier sessions.json introuvable");
-    const SESSIONS = await resp.json();
-    renderSession(SESSIONS);
+    const data = await resp.json();
+    LIEN_FORMULAIRE = data.lien_forms || "#";
+    renderSession(data.sessions || []);
   } catch(e) {
     const banner = document.getElementById("error-banner");
     banner.style.display = "block";
@@ -518,7 +485,7 @@ async function initSession() {
     document.getElementById("titre-formation").textContent = getParam("nom") || "Formation";
     document.getElementById("nb-sessions").textContent = "";
     document.getElementById("sessions-list").innerHTML = "";
-    document.getElementById("btn-interet").href = LIEN_FORMULAIRE;
+    document.getElementById("btn-interet").href = "#";
   }
 }
 
@@ -530,11 +497,22 @@ let sessions = [];
 async function initAdmin() {
   document.getElementById("vue-admin").style.display = "block";
 
+  try {
+    const resp = await fetch("sessions.json");
+    if (resp.ok) {
+      const data = await resp.json();
+      LIEN_FORMULAIRE = data.lien_forms || "#";
+      FORMATIONS.length = 0;
+      (data.formations || []).forEach(f => FORMATIONS.push(f));
+      sessions = data.sessions || [];
+    }
+  } catch(e) { /* partir de zéro */ }
+
+  // Remplir la liste déroulante formations
   const sel = document.getElementById("f-formation");
   FORMATIONS.slice().sort().forEach(f => {
     const opt = document.createElement("option");
-    opt.value = f;
-    opt.textContent = f;
+    opt.value = f; opt.textContent = f;
     sel.appendChild(opt);
   });
   const autreOpt = document.createElement("option");
@@ -546,17 +524,14 @@ async function initAdmin() {
   const selRenommer = document.getElementById("r-ancien");
   FORMATIONS.forEach(f => {
     const opt = document.createElement("option");
-    opt.value = f;
-    opt.textContent = f;
+    opt.value = f; opt.textContent = f;
     selRenommer.appendChild(opt);
   });
 
-  try {
-    const resp = await fetch("sessions.json");
-    if (resp.ok) sessions = await resp.json();
-  } catch(e) { /* pas de fichier existant, on part de zéro */ }
-
   renderTable();
+
+  // Afficher le lien Forms actuel
+  document.getElementById("forms-url").value = LIEN_FORMULAIRE;
 }
 
 function toggleAutreFormation(sel) {
@@ -599,6 +574,14 @@ function renderTable() {
   `).join("");
 }
 
+function afficherErreur(msg) {
+  document.getElementById("form-erreur-msg").textContent = msg;
+  document.getElementById("form-erreur").style.display = "inline";
+}
+function effacerErreur() {
+  document.getElementById("form-erreur").style.display = "none";
+}
+
 function ajouterSession() {
   const selFormation = document.getElementById("f-formation").value;
   const formation = selFormation === "__autre__"
@@ -628,9 +611,11 @@ function ajouterSession() {
   const statut = document.getElementById("f-statut").value;
   const formateur = document.getElementById("f-formateur").value.trim();
 
-  if (!formation) { alert("Veuillez choisir ou saisir une formation."); return; }
-  if (!dateVal)   { alert("Veuillez choisir une date."); return; }
-  if (!lieu)      { alert("Veuillez saisir un lieu."); return; }
+  if (!formation) { afficherErreur("Veuillez choisir ou saisir une formation."); return; }
+  if (!dateVal)   { afficherErreur("Veuillez choisir une date."); return; }
+  if (!heure)     { afficherErreur("Veuillez indiquer une heure de début."); return; }
+  if (!lieu)      { afficherErreur("Veuillez saisir ou sélectionner un lieu."); return; }
+  effacerErreur();
 
   const [y, m, d] = dateVal.split("-");
   const dateFormatee = `${d}/${m}/${y}`;
@@ -642,6 +627,7 @@ function ajouterSession() {
 
   renderTable();
   showToast("✅ Session ajoutée !");
+  effacerErreur();
 
   document.getElementById("f-formation").value = "";
   document.getElementById("f-formation-custom").style.display = "none";
@@ -653,6 +639,39 @@ function ajouterSession() {
   document.getElementById("f-date").value = "";
   document.getElementById("f-duree-valeur").value = "1";
   document.getElementById("f-duree-unite").value = "journée(s)";
+}
+
+function sauvegarderFormsUrl() {
+  const newUrl = document.getElementById("forms-url").value.trim();
+  if (!newUrl) { alert("Veuillez saisir une URL."); return; }
+  if (!newUrl.startsWith("http")) { alert("L'URL doit commencer par https://..."); return; }
+  LIEN_FORMULAIRE = newUrl;
+  exporterJSON();
+  showToast("✅ Lien Forms mis à jour ! Uploadez le nouveau sessions.json sur GitHub.");
+}
+
+function switchTab(tab) {
+  document.getElementById("panel-ajouter").style.display  = tab === "ajouter"  ? "block" : "none";
+  document.getElementById("panel-renommer").style.display = tab === "renommer" ? "block" : "none";
+  document.getElementById("tab-ajouter").style.cssText  = tab === "ajouter"
+    ? "padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:var(--bleu);border-bottom:2px solid var(--bleu);margin-bottom:-2px;cursor:pointer;"
+    : "padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--gris-moyen);cursor:pointer;";
+  document.getElementById("tab-renommer").style.cssText = tab === "renommer"
+    ? "padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:var(--bleu);border-bottom:2px solid var(--bleu);margin-bottom:-2px;cursor:pointer;"
+    : "padding:8px 20px;border:none;background:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--gris-moyen);cursor:pointer;";
+}
+
+function ajouterAuCatalogue() {
+  const nom = document.getElementById("nouvelle-formation").value.trim();
+  if (!nom) { alert("Veuillez saisir le nom de la formation."); return; }
+  if (FORMATIONS.includes(nom)) { alert("Cette formation existe déjà dans le catalogue."); return; }
+
+  FORMATIONS.push(nom);
+  rafraichirListesFormations();
+  exporterJSON();
+
+  document.getElementById("nouvelle-formation").value = "";
+  showToast(`✅ "${nom}" ajoutée ! Uploadez le nouveau sessions.json sur GitHub.`);
 }
 
 function renommerFormation() {
@@ -853,7 +872,12 @@ function supprimerSession(i) {
 }
 
 function exporterJSON() {
-  const json = JSON.stringify(sessions, null, 2);
+  const data = {
+    lien_forms: document.getElementById("forms-url").value.trim() || LIEN_FORMULAIRE,
+    formations: FORMATIONS,
+    sessions: sessions
+  };
+  const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
