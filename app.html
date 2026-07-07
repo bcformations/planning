@@ -232,7 +232,6 @@
     </div>
 
     <div class="admincard">
-      <div class="card-header"><span class="card-title">📚 Modifier le catalogue</span></div>
       <div class="card-body">
         <!-- Onglets -->
         <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #E5E8EA;">
@@ -245,12 +244,12 @@
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
             <div class="form-group">
               <label class="form-label">Nom de la nouvelle formation</label>
-              <input type="text" id="nouvelle-formation" class="form-control" placeholder="Ex : Excel à la Compta">
+              <input type="text" id="nouvelle-formation" class="form-control" placeholder="Ex : Excel en Comptabilité">
             </div>
             <button class="btn btn-primary" onclick="ajouterAuCatalogue()">➕ Ajouter au catalogue</button>
           </div>
           <p style="font-size:12px;color:var(--gris-moyen);margin-top:10px;">
-            Ajoute la formation à la liste déroulante <strong>et</strong> télécharge un nouveau <code>app.html</code> à uploader sur GitHub.
+            Ajoute la formation à la liste déroulante <strong>et</strong> télécharge un nouveau <code>sessions.json</code> à uploader sur GitHub.
           </p>
         </div>
 
@@ -901,5 +900,8 @@ function init() {
 }
 init();
 </script>
+</body>
+</html>
+
 </body>
 </html>
