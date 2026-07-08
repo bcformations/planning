@@ -456,12 +456,9 @@ async function initSession() {
     LIEN_FORMULAIRE = data.lien_forms || "#";
     renderSession(data.sessions || []);
   } catch(e) {
-    const banner = document.getElementById("error-banner");
-    banner.style.display = "block";
-    banner.textContent = "⚠️ Impossible de charger les sessions. Vérifiez que le fichier sessions.json est bien dans le même dossier que cette page.";
     document.getElementById("titre-formation").textContent = getParam("nom") || "Formation";
     document.getElementById("nb-sessions").textContent = "";
-    document.getElementById("sessions-list").innerHTML = "";
+    document.getElementById("sessions-list").innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Pas de session planifiée à ce jour.<br>Signalez votre intérêt ci-dessous !</div></div>';
     document.getElementById("btn-interet").href = "#";
   }
 }
