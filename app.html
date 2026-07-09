@@ -168,8 +168,9 @@
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Formation *</label>
-            <input type="text" id="f-formation" class="form-control" placeholder="Rechercher une formation..." list="formations-list" autocomplete="off">
-            <datalist id="formations-list"></datalist>
+            <select id="f-formation" class="form-control">
+              <option value="">-- Choisir une formation --</option>
+            </select>
           </div>
           <div class="form-group">
             <label class="form-label">Date *</label>
@@ -543,7 +544,6 @@ function effacerErreur() {
 
 function ajouterSession() {
   const formation = document.getElementById("f-formation").value.trim();
-
   const dateVal = document.getElementById("f-date").value;
   const heure   = document.getElementById("f-heure").value;
 
@@ -671,16 +671,18 @@ function renommerFormation() {
 function rafraichirListesFormations() {
   const sorted = FORMATIONS.slice().sort();
 
-  // Datalist pour la recherche
-  const dl = document.getElementById("formations-list");
-  dl.innerHTML = "";
+  // Liste déroulante ajout session
+  const sel = document.getElementById("f-formation");
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- Choisir une formation --</option>';
   sorted.forEach(f => {
     const opt = document.createElement("option");
-    opt.value = f;
-    dl.appendChild(opt);
+    opt.value = f; opt.textContent = f;
+    sel.appendChild(opt);
   });
+  sel.value = val;
 
-  // Liste déroulante du renommage
+  // Liste déroulante renommage
   const selRenommer = document.getElementById("r-ancien");
   if (selRenommer) {
     selRenommer.innerHTML = "";
