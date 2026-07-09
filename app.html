@@ -168,9 +168,10 @@
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Formation *</label>
-            <select id="f-formation" class="form-control">
+            <select id="f-formation" class="form-control" onchange="toggleAutreFormation(this)">
               <option value="">-- Choisir une formation --</option>
             </select>
+            <input type="text" id="f-formation-custom" class="form-control" placeholder="Saisir le nom de la formation" style="display:none;margin-top:6px;">
           </div>
           <div class="form-group">
             <label class="form-label">Date *</label>
@@ -457,9 +458,12 @@ async function initSession() {
     LIEN_FORMULAIRE = data.lien_forms || "#";
     renderSession(data.sessions || []);
   } catch(e) {
+    const banner = document.getElementById("error-banner");
+    banner.style.display = "block";
+    banner.textContent = "⚠️ Impossible de charger les sessions. Vérifiez que le fichier sessions.json est bien dans le même dossier que cette page.";
     document.getElementById("titre-formation").textContent = getParam("nom") || "Formation";
     document.getElementById("nb-sessions").textContent = "";
-    document.getElementById("sessions-list").innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Pas de session planifiée à ce jour.<br>Signalez votre intérêt ci-dessous !</div></div>';
+    document.getElementById("sessions-list").innerHTML = "";
     document.getElementById("btn-interet").href = "#";
   }
 }
@@ -483,8 +487,17 @@ async function initAdmin() {
     }
   } catch(e) { /* partir de zéro */ }
 
-  // Remplir le datalist formations
-  rafraichirListesFormations();
+  // Remplir la liste déroulante formations
+  const sel = document.getElementById("f-formation");
+  FORMATIONS.slice().sort().forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f; opt.textContent = f;
+    sel.appendChild(opt);
+  });
+  const autreOpt = document.createElement("option");
+  autreOpt.value = "__autre__";
+  autreOpt.textContent = "✏️ Autre formation…";
+  sel.appendChild(autreOpt);
 
   // Remplir la liste déroulante du renommage
   const selRenommer = document.getElementById("r-ancien");
@@ -500,6 +513,11 @@ async function initAdmin() {
   document.getElementById("forms-url").value = LIEN_FORMULAIRE;
 }
 
+function toggleAutreFormation(sel) {
+  const custom = document.getElementById("f-formation-custom");
+  custom.style.display = sel.value === "__autre__" ? "block" : "none";
+  if (sel.value === "__autre__") custom.focus();
+}
 function toggleAutreLieu(sel) {
   const custom = document.getElementById("f-lieu-custom");
   custom.style.display = sel.value === "__autre__" ? "block" : "none";
@@ -543,7 +561,11 @@ function effacerErreur() {
 }
 
 function ajouterSession() {
-  const formation = document.getElementById("f-formation").value.trim();
+  const selFormation = document.getElementById("f-formation").value;
+  const formation = selFormation === "__autre__"
+    ? document.getElementById("f-formation-custom").value.trim()
+    : selFormation;
+
   const dateVal = document.getElementById("f-date").value;
   const heure   = document.getElementById("f-heure").value;
 
@@ -585,6 +607,8 @@ function ajouterSession() {
   effacerErreur();
 
   document.getElementById("f-formation").value = "";
+  document.getElementById("f-formation-custom").style.display = "none";
+  document.getElementById("f-formation-custom").value = "";
   document.getElementById("f-lieu").value = "Salle de formation 1";
   document.getElementById("f-lieu-custom").style.display = "none";
   document.getElementById("f-lieu-custom").value = "";
@@ -671,27 +695,27 @@ function renommerFormation() {
 function rafraichirListesFormations() {
   const sorted = FORMATIONS.slice().sort();
 
-  // Liste déroulante ajout session
-  const sel = document.getElementById("f-formation");
-  const val = sel.value;
-  sel.innerHTML = '<option value="">-- Choisir une formation --</option>';
+  const selAjout = document.getElementById("f-formation");
+  const valAjout = selAjout.value;
+  selAjout.innerHTML = '<option value="">-- Choisir une formation --</option>';
   sorted.forEach(f => {
     const opt = document.createElement("option");
     opt.value = f; opt.textContent = f;
-    sel.appendChild(opt);
+    selAjout.appendChild(opt);
   });
-  sel.value = val;
+  const autreOpt = document.createElement("option");
+  autreOpt.value = "__autre__";
+  autreOpt.textContent = "✏️ Autre formation…";
+  selAjout.appendChild(autreOpt);
+  selAjout.value = valAjout;
 
-  // Liste déroulante renommage
   const selRenommer = document.getElementById("r-ancien");
-  if (selRenommer) {
-    selRenommer.innerHTML = "";
-    FORMATIONS.forEach(f => {
-      const opt = document.createElement("option");
-      opt.value = f; opt.textContent = f;
-      selRenommer.appendChild(opt);
-    });
-  }
+  selRenommer.innerHTML = "";
+  FORMATIONS.forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f; opt.textContent = f;
+    selRenommer.appendChild(opt);
+  });
 }
 
 // ════════════════════════════════════════════════════
