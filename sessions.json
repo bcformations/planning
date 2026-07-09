@@ -82,7 +82,16 @@
       "lieu": "Distanciel",
       "formateur": "Celine",
       "places": 10
-     },
+    },
+    {
+      "formation": "EN1090",
+      "date": "28/07/2026",
+      "heure": "09h00",
+      "duree": "1 journée",
+      "lieu": "Salle de formation 1",
+      "formateur": "Nicolas DELATTRE",
+      "places": 10
+    },
     {
       "formation": "BOCAD",
       "date": "15/08/2026",
@@ -94,16 +103,7 @@
     },
     {
       "formation": "AUTOCAD Perfectionnement",
-      "date": "01/09/2026", 
-      "heure": "09h00",
-      "duree": "2 journées",
-      "lieu": "Bureau d'Études",
-      "formateur": "",
-      "places": 8
-    },
-    {
-      "formation": "AUTOCAD Perfectionnement",
-      "date": "15/10/2026",
+      "date": "01/09/2026",
       "heure": "09h00",
       "duree": "2 journées",
       "lieu": "Bureau d'Études",
@@ -138,6 +138,15 @@
       "places": 6
     },
     {
+      "formation": "AUTOCAD Perfectionnement",
+      "date": "15/10/2026",
+      "heure": "09h00",
+      "duree": "2 journées",
+      "lieu": "Bureau d'Études",
+      "formateur": "",
+      "places": 8
+    },
+    {
       "formation": "Conduite d'Audit",
       "date": "20/10/2026",
       "heure": "09h00",
@@ -154,6 +163,6 @@
       "lieu": "Salle VIP",
       "formateur": "",
       "places": 20
-}
-    ]
+    }
+  ]
 }
